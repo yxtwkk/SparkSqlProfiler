@@ -16,6 +16,7 @@ public class SparkAppsAnalyzer {
     // Key = RDDJoin-CMS-1-7G-0.5, Value = [app-20170630121954-0025, app-20170630122434-0026, ...]
     private Map<String, List<Application>> appNameToIdsMap = new HashMap<String, List<Application>>();
     private Map<String, ApplicationStatistics> appStatisticsMap = new HashMap<String, ApplicationStatistics>();
+    private Map<String, Application> selectedAppNameToIdsMap = new HashMap<String, Application>();
 
     // profiledApps = [apps with different names in the appList]
     public SparkAppsAnalyzer(List<Application> profiledApps) {
@@ -55,6 +56,11 @@ public class SparkAppsAnalyzer {
 
     public void outputAppInfo(String appDir, String dirName){
 
+        Map<String,Long> AppStatistics = new HashMap<String,Long>();
+        Map<Application,Stage> StageStatistics = new HashMap<Application, Stage>();
+        long max = 0;
+        StringBuilder appInfo = new StringBuilder();
+        Application appTmp = null;
         for (Map.Entry<String, List<Application>> appEntry : appNameToIdsMap.entrySet()){
             String appName = appEntry.getKey();
             String outputAppInfoFile = appDir + File.separatorChar + dirName + File.separatorChar + appName + "-Apps.txt";
@@ -64,13 +70,38 @@ public class SparkAppsAnalyzer {
             for(Application app : appEntry.getValue()) {
                 if (app.getStatus().equals("SUCCEEDED")) {
                     //System.out.println("111\n");
-                    System.out.println(app.getStatus());
+                    //System.out.println("!!!!"+app.getAppId());
                     sb.append("[appId = " + app.getAppId() + "]\n");
                     sb.append("[" + app.getAppId() + ".app.duration] " + app.getDuration() + "\n");
+                    if(app.getDuration()>max)
+                    {
+                        appTmp=app;
+                        max=app.getDuration();
+                    }
                 }
+
             }
+            selectedAppNameToIdsMap.put(appName,appTmp);
             FileTextWriter.write(outputAppInfoFile, sb.toString());
+            AppStatistics.put(appName,max);
+            //appInfo.append("[appId="+appId+"]\n");
+            //appInfo.append(appName+" "+max+"\n");
+            max=0;
+
         }
+        Object[] key_arr = AppStatistics.keySet().toArray();
+        Arrays.sort(key_arr);
+        for  (Object key : key_arr) {
+            Object value = AppStatistics.get(key);
+            appInfo.append(key+" "+value+"\n");
+        }
+
+        String output = appDir + File.separatorChar + dirName + File.separatorChar  + "Apps.txt";
+        FileTextWriter.write(output, appInfo.toString());
+
+
+
+
 
     }
 
@@ -118,25 +149,71 @@ public class SparkAppsAnalyzer {
                         Stage stage = stageEntry.getValue();
                         sb.append("[stageId = " + stage.getStageId() + "]\n");
                         for(Map.Entry<Integer, StageAttempt> stageAttemptEntry : stage.getStageAttemptMap().entrySet()){
-
                             StageAttempt stageAttempt = stageAttemptEntry.getValue();
                             Integer stageAttemptId = stageAttemptEntry.getKey();
                             sb.append("[" + stageAttemptId + ".stage.duration] " + stageAttempt.getDuration()+ "\n");
-
                         }
 
                     }
-
                 }
                 FileTextWriter.write(outputStageInfoFile, sb.toString());
-
-
             }
 
+        }
+    }
 
+    public void outputSelectedAppStageInfo(String appDir, String dirName){
 
+        StringBuilder sb = new StringBuilder();
+        Map<String,String> tasksInfo = new HashMap<String, String>();
+        for(Map.Entry<String,Application> appEntry : selectedAppNameToIdsMap.entrySet()){
+
+            String appName = appEntry.getKey();
+            //sb.append("[appName = " + appName + "]");
+            Application app = appEntry.getValue();
+
+            long max=0;
+            Integer tmpId=0;
+            Integer tmpStageId=0;
+
+            for (Map.Entry<Integer, Stage> stageEntry : app.getStageMap().entrySet()) {
+
+                Integer stageId = stageEntry.getKey();
+                Stage stage = stageEntry.getValue();
+
+                for (Map.Entry<Integer, StageAttempt> stageAttemptEntry : stage.getStageAttemptMap().entrySet()) {
+
+                    StageAttempt stageAttempt = stageAttemptEntry.getValue();
+                    if(stageAttempt.getDuration()>max){
+                        max = stageAttempt.getDuration();
+                        Integer stageAttemptId = stageAttemptEntry.getKey();
+                        tmpId = stageAttemptId;
+                        tmpStageId = stageId;
+                    }
+                }
+            }
+            //sb.append("[appId = " + app.getAppId() + "]\n");
+            //sb.append("[stageId = " + tmpStageId + "]\n");
+            //sb.append("[ "+ tmpStageId + tmpId + ".stage.duration] " + max + "\n");
+
+            Set<Integer> stageIds = new HashSet<Integer>();
+            stageIds.add(tmpStageId);
+            String taskInfo = app.getTaskDuration(tmpStageId);
+            //sb.append(taskInfo);
+            tasksInfo.put(appName,taskInfo);
+        }
+        Object[] key_arr = tasksInfo.keySet().toArray();
+        Arrays.sort(key_arr);
+        for  (Object key : key_arr) {
+            Object value = tasksInfo.get(key);
+            sb.append(key+"\n");
+            sb.append(value+"\n");
         }
 
+
+
+        String outputFile = appDir + File.separatorChar + dirName + File.separatorChar + "Stage.txt";
+        FileTextWriter.write(outputFile, sb.toString());
 
     }
 

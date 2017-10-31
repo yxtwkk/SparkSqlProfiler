@@ -148,8 +148,6 @@ public class SparkAppProfiler {
     private static void profile(String app, String appJsonDir, int[] selectedStageIds) {
 
         Integer[] stageIdsToMerge = {};
-        if (app.equalsIgnoreCase("SVM"))
-            stageIdsToMerge = new Integer[]{4, 6, 8, 10, 12, 14, 16, 18, 20, 22};
 
         SparkAppProfiler profiler = new SparkAppProfiler(false, appJsonDir);
 
@@ -161,9 +159,10 @@ public class SparkAppProfiler {
         analyzer.outputAppInfo(appJsonDir,"AppInfo");
         analyzer.outputJobInfo(appJsonDir,"JobInfo");
         analyzer.outputStageInfo(appJsonDir,"StageInfo");
-        analyzer.outputStatistics(appJsonDir + File.separatorChar + "Statistics");
+        analyzer.outputSelectedAppStageInfo(appJsonDir,"StageInfo");
+        //analyzer.outputStatistics(appJsonDir + File.separatorChar + "Statistics");
         analyzer.outputTaskInStage(appJsonDir, "TaskInfo", selectedStageIds);
-        analyzer.outputSlowestTask(appJsonDir, "Abnormal-json", selectedStageIds);
+        //analyzer.outputSlowestTask(appJsonDir, "Abnormal-json", selectedStageIds);
     }
 
     public static void main(String args[]) {

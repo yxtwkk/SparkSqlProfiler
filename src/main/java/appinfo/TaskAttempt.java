@@ -262,6 +262,8 @@ public class TaskAttempt {
         return taskAttempObject.toString();
     }
 
+    public int getTaskId(){ return taskId;}
+
     public String toString() {
 
         String prefix = index + "";

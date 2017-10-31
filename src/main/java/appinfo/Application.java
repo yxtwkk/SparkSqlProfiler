@@ -173,4 +173,26 @@ public class Application {
 
         return sb.toString();
     }
+
+    public String getTaskDuration(Integer stageId) {
+
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer, Stage> stageEntry : stageMap.entrySet()) {
+            if (stageId == stageEntry.getKey()) {
+
+                Stage selectedStage = stageEntry.getValue();
+                StageAttempt stageAttempt = selectedStage.getCompletedStage();
+                for (Task task : stageAttempt.getTaskMap().values()) {
+                    TaskAttempt taskAttempt = task.getFirstCompletedTask();
+                    long duration = taskAttempt.getDuration();
+                    int taskId = taskAttempt.getTaskId();
+                    sb.append(taskId + " " + duration +'\n');
+                }
+
+            }
+
+        }
+        return  sb.toString();
+    }
+
 }
