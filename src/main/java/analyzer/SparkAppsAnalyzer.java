@@ -57,9 +57,12 @@ public class SparkAppsAnalyzer {
     public void outputAppInfo(String appDir, String dirName){
 
         Map<String,Long> AppStatistics = new HashMap<String,Long>();
+        Map<String,List<Long>> AllApp = new HashMap<String, List<Long>>();
         Map<Application,Stage> StageStatistics = new HashMap<Application, Stage>();
         long max = 0;
         StringBuilder appInfo = new StringBuilder();
+        String test = null;
+
         Application appTmp = null;
         for (Map.Entry<String, List<Application>> appEntry : appNameToIdsMap.entrySet()){
             String appName = appEntry.getKey();
@@ -67,26 +70,31 @@ public class SparkAppsAnalyzer {
 
             StringBuilder sb = new StringBuilder();
             sb.append("[appName = " + appName + "]\n");
+            List<Long> DurationTmp = new ArrayList<Long>();
             for(Application app : appEntry.getValue()) {
                 if (app.getStatus().equals("SUCCEEDED")) {
                     //System.out.println("111\n");
                     //System.out.println("!!!!"+app.getAppId());
                     sb.append("[appId = " + app.getAppId() + "]\n");
                     sb.append("[" + app.getAppId() + ".app.duration] " + app.getDuration() + "\n");
+                    DurationTmp.add(app.getDuration());
                     if(app.getDuration()>max)
                     {
                         appTmp=app;
                         max=app.getDuration();
+                        test = app.getAppId();
                     }
                 }
 
             }
             selectedAppNameToIdsMap.put(appName,appTmp);
+            AllApp.put(appName,DurationTmp);
             FileTextWriter.write(outputAppInfoFile, sb.toString());
             AppStatistics.put(appName,max);
             //appInfo.append("[appId="+appId+"]\n");
             //appInfo.append(appName+" "+max+"\n");
             max=0;
+            System.out.println(test);
 
         }
         Object[] key_arr = AppStatistics.keySet().toArray();
@@ -99,6 +107,21 @@ public class SparkAppsAnalyzer {
         String output = appDir + File.separatorChar + dirName + File.separatorChar  + "Apps.txt";
         FileTextWriter.write(output, appInfo.toString());
 
+        key_arr = AllApp.keySet().toArray();
+        Arrays.sort(key_arr);
+        StringBuilder allAppInfo = new StringBuilder();
+        for  (Object key : key_arr) {
+            int i=0;
+            List<Long> value = AllApp.get(key);
+            allAppInfo.append(key+"\n");
+            for(Long tmp :value){
+                allAppInfo.append(i+" "+tmp+"\n");
+                i++;
+            }
+
+        }
+        output = appDir + File.separatorChar + dirName + File.separatorChar  + "AllApps.txt";
+        FileTextWriter.write(output, allAppInfo.toString());
 
 
 
@@ -165,6 +188,7 @@ public class SparkAppsAnalyzer {
     public void outputSelectedAppStageInfo(String appDir, String dirName){
 
         StringBuilder sb = new StringBuilder();
+        Map<String,Long> stageDuration = new HashMap<String, Long>();
         Map<String,String> tasksInfo = new HashMap<String, String>();
         for(Map.Entry<String,Application> appEntry : selectedAppNameToIdsMap.entrySet()){
 
@@ -192,6 +216,7 @@ public class SparkAppsAnalyzer {
                     }
                 }
             }
+            stageDuration.put(appName,max);
             //sb.append("[appId = " + app.getAppId() + "]\n");
             //sb.append("[stageId = " + tmpStageId + "]\n");
             //sb.append("[ "+ tmpStageId + tmpId + ".stage.duration] " + max + "\n");
@@ -207,14 +232,25 @@ public class SparkAppsAnalyzer {
         for  (Object key : key_arr) {
             Object value = tasksInfo.get(key);
             sb.append(key+"\n");
+            sb.append(value);
+        }
+
+        String outputFile = appDir + File.separatorChar + dirName + File.separatorChar + "Stage.txt";
+        FileTextWriter.write(outputFile, sb.toString());
+
+        sb = new StringBuilder();
+        key_arr = stageDuration.keySet().toArray();
+        Arrays.sort(key_arr);
+        for  (Object key : key_arr) {
+            Object value = stageDuration.get(key);
+            sb.append(key+" ");
             sb.append(value+"\n");
         }
 
 
 
-        String outputFile = appDir + File.separatorChar + dirName + File.separatorChar + "Stage.txt";
+        outputFile = appDir + File.separatorChar + dirName + File.separatorChar + "StageDuration.txt";
         FileTextWriter.write(outputFile, sb.toString());
-
     }
 
     public void outputTaskInStage(String appDir, String dirName, int[] selectedStageIds) {
