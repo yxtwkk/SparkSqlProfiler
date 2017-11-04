@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 fig, axes = plt.subplots(ncols=2, sharey=True)
 fig.subplots_adjust(wspace=0)
 
-filename="/Users/yxtwkk/Desktop/Profile/TPC-H-q22/AppInfo/AllApps.txt"
+filename="/Users/yxtwkk/Desktop/Profile/TPC-H-q14/StageInfo/Stage.txt"
 AppName=[]
 l1=[]
 l2=[]
@@ -40,7 +40,7 @@ axes[0].boxplot(l, labels=label,sym='r*',whis='range',showfliers=False)
 #axes[0].bxp(list,showfliers=False, showcaps=False, meanline=False, showmeans=True)
 
 axes[0].set_xlabel('Executor')
-axes[0].set_ylabel('App.duration(s)')
+axes[0].set_ylabel('Tasks.duration(s)')
 axes[0].set_title('Skew0')
 
 #plt.ylabel('Task.Duration(s)')
@@ -50,9 +50,10 @@ axes[1].boxplot(m, labels=label,sym='r*',whis='range',showfliers=False)
 axes[1].set_xlabel('Executor')
 axes[1].set_title('Skew4')
 appName = appName[0:10]+appName[len(appName)-5:len(appName)-1]
-fig.suptitle(appName+'-AppsTime')
+fig.suptitle(appName+'-TasksTime')
 #plt.ylabel('Task.Duration(s)')
 #plt.xlabel('Executor')
+plt.savefig("/Users/yxtwkk/Desktop/Profile/TPC-H-q14/Image/TaskDuration.jpg")
 plt.show()
 #plt.savefig("/Users/yxtwkk/Desktop/Profile/TPC-H-q22/TaskInfo/Task.jpg")
 #plt2.boxplot(m, sym='r*',whis='range',showfliers=False)

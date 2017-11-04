@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 
-filename="/Users/yxtwkk/Desktop/Profile/TPC-H-q22/StageInfo/StageDuration.txt"
+filename="/Users/yxtwkk/Desktop/Profile/TPC-H-q14/AppInfo/Apps.txt"
 AppName=[]
 AppDuration0=[]
 AppDuration4=[]
@@ -36,11 +36,11 @@ plt.legend()
 plt.xticks(x,names,rotation=0)
 plt.margins(0)
 plt.subplots_adjust(bottom=0.15)
-plt.ylabel('Stage.Duration(s)')
+plt.ylabel('App.Duration(s)')
 plt.xlabel('Executor')
 plt.title(appName)
-plt.savefig("/Users/yxtwkk/Desktop/Profile/TPC-H-q22/StageInfo/StageInfo.jpg")
-plt.show()
+plt.savefig("/Users/yxtwkk/Desktop/Profile/TPC-H-q14/Image/AppDuration.jpg")
+#plt.show()
 
 #AppName=[1,2,4,8]
 #plt.figure()

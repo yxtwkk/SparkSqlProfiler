@@ -70,31 +70,41 @@ public class SparkAppsAnalyzer {
 
             StringBuilder sb = new StringBuilder();
             sb.append("[appName = " + appName + "]\n");
-            List<Long> DurationTmp = new ArrayList<Long>();
+            //Long[] DurationTmp = null;
+            Map<Long,Application> DurationTmp = new HashMap<Long, Application>();
+            List<Long> AllDuration = new ArrayList<Long>();
             for(Application app : appEntry.getValue()) {
                 if (app.getStatus().equals("SUCCEEDED")) {
                     //System.out.println("111\n");
                     //System.out.println("!!!!"+app.getAppId());
                     sb.append("[appId = " + app.getAppId() + "]\n");
                     sb.append("[" + app.getAppId() + ".app.duration] " + app.getDuration() + "\n");
-                    DurationTmp.add(app.getDuration());
-                    if(app.getDuration()>max)
+                   // DurationTmp.add
+                    AllDuration.add(app.getDuration());
+                    DurationTmp.put(app.getDuration(),app);
+                 /*   if(app.getDuration()>max)
                     {
                         appTmp=app;
                         max=app.getDuration();
                         test = app.getAppId();
-                    }
+                    }*/
                 }
 
             }
-            selectedAppNameToIdsMap.put(appName,appTmp);
-            AllApp.put(appName,DurationTmp);
+            Object[] Duration = DurationTmp.keySet().toArray();
+            Arrays.sort(Duration);
+            Object tmp = Duration[Duration.length/2];
+            Application app = DurationTmp.get(tmp);
+            System.out.println(app.getName() +":"+ app.getDuration());
+
+            selectedAppNameToIdsMap.put(appName,app);
+            AllApp.put(appName,AllDuration);
             FileTextWriter.write(outputAppInfoFile, sb.toString());
-            AppStatistics.put(appName,max);
+            AppStatistics.put(appName,app.getDuration());
             //appInfo.append("[appId="+appId+"]\n");
             //appInfo.append(appName+" "+max+"\n");
             max=0;
-            System.out.println(test);
+            //System.out.println(test);
 
         }
         Object[] key_arr = AppStatistics.keySet().toArray();
